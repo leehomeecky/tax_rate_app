@@ -26,7 +26,7 @@ export class TaxService {
     const { countryCode, taxRate, productCode, serviceCode } = data;
     const productAndServiceCode = productCode || serviceCode;
 
-    if (productAndServiceCode)
+    if (!productAndServiceCode)
       throw new BadRequestException(
         null,
         'Either productCode, or serviceCode must be passed',
