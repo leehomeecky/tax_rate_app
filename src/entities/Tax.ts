@@ -28,11 +28,11 @@ export class Tax {
 
   @ManyToOne(() => Country, (country) => country.tax)
   @JoinColumn()
-  country: Country;
+  country?: Country;
 
   @ManyToOne(() => ProductAndService, (productService) => productService.tax)
   @JoinColumn()
-  productService: ProductAndService;
+  productService?: ProductAndService;
 
   @OneToMany(() => TaxLookUpHistory, ({ tax }) => tax, {
     cascade: ['insert', 'update', 'soft-remove'],

@@ -1,7 +1,19 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { TaxService } from './tax.service';
 import { Request, Response } from 'express';
-import { createTaxDto } from './tax.dto';
+import { createTaxDto, updateTaxDto } from './tax.dto';
 
 @Controller('tax')
 export class TaxController {
@@ -17,8 +29,49 @@ export class TaxController {
     return resp.json({ code: 0, message: 'Operations sucessful' });
   }
 
-  @Get()
-  async findAll() {
-    return await this.taxService.findAll();
+  @Get('/')
+  async getAllTaxes(
+    @Req() req: Request,
+    @Query() query: createTaxDto,
+    @Res() resp: Response,
+  ) {
+    return await this.taxService.getAllTaxes();
+  }
+
+  @Get('/:id')
+  async getTaxe(
+    @Req() req: Request,
+    @Param('id', new ParseIntPipe()) id,
+    @Res() resp: Response,
+  ) {
+    const result = await this.taxService.getTaxe(id);
+    return resp.json({
+      ...result,
+      code: 0,
+      message: 'Operations sucessful',
+    });
+  }
+
+  @Put('/')
+  async updateTax(
+    @Req() req: Request,
+    @Body() body: updateTaxDto,
+    @Res() resp: Response,
+  ) {
+    await this.taxService.updateTax(body);
+    return resp.json({ code: 0, message: 'Operations sucessful' });
+  }
+
+  @Delete('/:id')
+  async removeTaxe(
+    @Req() req: Request,
+    @Param('id', new ParseIntPipe()) id,
+    @Res() resp: Response,
+  ) {
+    await this.taxService.removeTaxe(id);
+    return resp.json({
+      code: 0,
+      message: 'Operations sucessful',
+    });
   }
 }
