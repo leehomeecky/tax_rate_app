@@ -36,7 +36,7 @@ export class TaxService {
         where: { countryCode },
       });
       const productService = await this.productAndServiceRepo.findOne({
-        where: { category: productAndServiceCode },
+        where: { shortName: productAndServiceCode },
       });
 
       if (!country)
