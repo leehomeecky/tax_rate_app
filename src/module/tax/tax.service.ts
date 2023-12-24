@@ -5,10 +5,11 @@ import {
   Logger,
   NotAcceptableException,
 } from '@nestjs/common';
-import { createTaxDto, updateTaxDto } from './tax.dto';
+import { CreateTaxDto, GetAllTaxFilter, UpdateTaxDto } from './tax.dto';
 import { Country, ProductAndService, Tax } from 'src/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { DEFAULT_LIMIT } from 'src/helper/constants';
 
 @Injectable()
 export class TaxService {
@@ -21,7 +22,7 @@ export class TaxService {
     private readonly taxRepo: Repository<Tax>,
   ) {}
 
-  async createTax(data: createTaxDto) {
+  async createTax(data: CreateTaxDto) {
     const { countryCode, taxRate, productCode, serviceCode } = data;
     const productAndServiceCode = productCode || serviceCode;
 
@@ -59,7 +60,7 @@ export class TaxService {
     }
   }
 
-  async updateTax(data: updateTaxDto) {
+  async updateTax(data: UpdateTaxDto) {
     const { id, countryCode, taxRate, productCode, serviceCode } = data;
     const productAndServiceCode = productCode || serviceCode;
 
@@ -84,9 +85,52 @@ export class TaxService {
     }
   }
 
-  async getAllTaxes() {
+  async getAllTaxes(filter: GetAllTaxFilter) {
     try {
-      // return result;
+      const { search, offset, limit } = filter;
+      DEFAULT_LIMIT;
+      const taxSql = this.taxRepo
+        .createQueryBuilder('tax')
+        .select('tax', 'tax')
+        .leftJoinAndSelect('tax.productService', 'productService')
+        .leftJoinAndSelect('tax.country', 'country')
+        .leftJoinAndSelect('country.region', 'region')
+        .limit(limit ?? DEFAULT_LIMIT)
+        .offset(offset ?? 0);
+
+      const taxMetaSql = this.taxRepo
+        .createQueryBuilder('tax')
+        .select('COUNT(tax.id)', 'count');
+
+      if (search?.length)
+        taxSql.andWhere(
+          `(
+            tax.name LIKE :search OR
+            productService.name LIKE :search OR
+            productService.shortName LIKE :search OR
+            productService.category LIKE :search OR
+            country.name LIKE :search OR
+            country.countryCode LIKE :search OR
+            region.name LIKE :search OR
+            region.shortName LIKE :search OR
+            tax.taxRate LIKE :search
+          )`,
+          { search: `%${search}%` },
+        );
+
+      const [tax, taxMeta] = await Promise.all([
+        taxSql.getMany(),
+        taxMetaSql.getRawOne(),
+      ]);
+
+      return {
+        ...tax,
+        pagination: {
+          count: +taxMeta.count,
+          limit: limit ?? DEFAULT_LIMIT,
+          offset: offset ?? 0,
+        },
+      };
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(null, 'server error');

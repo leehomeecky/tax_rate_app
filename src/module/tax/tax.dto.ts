@@ -1,6 +1,7 @@
 import {
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsOptional,
   IsString,
   Max,
@@ -8,7 +9,7 @@ import {
 } from 'class-validator';
 import { productServiceCategoryEnum } from 'src/entities/ProductAndService';
 
-export class createTaxDto {
+export class CreateTaxDto {
   @IsString({ message: 'countryCode is not a valid string' })
   @IsNotEmpty()
   countryCode: string;
@@ -28,7 +29,7 @@ export class createTaxDto {
   serviceCode?: productServiceCategoryEnum;
 }
 
-export class updateTaxDto {
+export class UpdateTaxDto {
   @IsString()
   @IsNotEmpty()
   id: string;
@@ -50,4 +51,18 @@ export class updateTaxDto {
   @IsOptional()
   @IsString()
   serviceCode?: productServiceCategoryEnum;
+}
+
+export class GetAllTaxFilter {
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  limit?: number;
+
+  @IsNumberString()
+  @IsOptional()
+  offset?: number;
 }
