@@ -5,8 +5,18 @@ import {
   Logger,
   NotAcceptableException,
 } from '@nestjs/common';
-import { CreateTaxDto, GetAllTaxFilter, UpdateTaxDto } from './tax.dto';
-import { Country, ProductAndService, Tax } from 'src/entities';
+import {
+  CreateTaxDto,
+  GetAllTaxFilter,
+  TaxLookUpDto,
+  UpdateTaxDto,
+} from './tax.dto';
+import {
+  Country,
+  ProductAndService,
+  Tax,
+  TaxLookUpHistory,
+} from 'src/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DEFAULT_LIMIT } from 'src/helper/constants';
@@ -20,6 +30,8 @@ export class TaxService {
     private readonly productAndServiceRepo: Repository<ProductAndService>,
     @InjectRepository(Tax)
     private readonly taxRepo: Repository<Tax>,
+    @InjectRepository(TaxLookUpHistory)
+    private readonly taxLookUpHistoryRepo: Repository<TaxLookUpHistory>,
   ) {}
 
   async createTax(data: CreateTaxDto) {
@@ -156,6 +168,34 @@ export class TaxService {
   async removeTaxe(id) {
     try {
       await this.taxRepo.softDelete(id);
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException(null, 'server error');
+    }
+  }
+
+  async lookUpTax(data: TaxLookUpDto) {
+    try {
+      const { taxId, amount, quantity } = data;
+
+      const tax = await this.getTaxe(+taxId);
+      const taxRate = +tax?.taxRate || 0;
+      const taxAmountPerUnit = taxRate * +amount;
+      const totalTaxAmount = taxAmountPerUnit * +quantity;
+      const sqlData: TaxLookUpHistory = {
+        tax,
+        amount,
+        quantity,
+      };
+      await this.taxLookUpHistoryRepo.save(sqlData);
+
+      return {
+        country: tax?.country?.name,
+        region: tax?.country?.region?.name,
+        taxRate,
+        taxAmountPerUnit,
+        totalTaxAmount,
+      };
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(null, 'server error');

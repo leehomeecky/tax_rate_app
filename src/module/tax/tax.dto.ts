@@ -66,3 +66,17 @@ export class GetAllTaxFilter {
   @IsOptional()
   offset?: number;
 }
+
+export class TaxLookUpDto {
+  @IsNumberString()
+  @IsNotEmpty()
+  taxId: number;
+
+  @IsNumberString()
+  @IsNotEmpty()
+  amount: number;
+
+  @IsNumberString()
+  @IsNotEmpty()
+  quantity: number;
+}

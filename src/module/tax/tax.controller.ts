@@ -13,7 +13,12 @@ import {
 } from '@nestjs/common';
 import { TaxService } from './tax.service';
 import { Request, Response } from 'express';
-import { CreateTaxDto, GetAllTaxFilter, UpdateTaxDto } from './tax.dto';
+import {
+  CreateTaxDto,
+  GetAllTaxFilter,
+  TaxLookUpDto,
+  UpdateTaxDto,
+} from './tax.dto';
 
 @Controller('tax')
 export class TaxController {
@@ -27,6 +32,16 @@ export class TaxController {
   ) {
     await this.taxService.createTax(body);
     return resp.json({ code: 0, message: 'Operations sucessful' });
+  }
+
+  @Get('/lookUp')
+  async lookUpTax(
+    @Req() req: Request,
+    @Query() query: TaxLookUpDto,
+    @Res() resp: Response,
+  ) {
+    const result = await this.taxService.lookUpTax(query);
+    resp.json({ ...result, code: 0, message: 'Operations sucessful' });
   }
 
   @Get('/')

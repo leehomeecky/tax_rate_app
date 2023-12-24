@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
@@ -25,6 +26,12 @@ export class TaxLookUpHistory {
   @ManyToOne(() => Tax, ({ lookUpHistory }) => lookUpHistory)
   @JoinColumn()
   tax: Tax;
+
+  @Column({ type: 'varchar', default: 0 })
+  amount?: number;
+
+  @Column({ type: 'varchar', default: 0 })
+  quantity?: number;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt?: Date;
