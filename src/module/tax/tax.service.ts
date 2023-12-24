@@ -95,8 +95,8 @@ export class TaxService {
         .leftJoinAndSelect('tax.productService', 'productService')
         .leftJoinAndSelect('tax.country', 'country')
         .leftJoinAndSelect('country.region', 'region')
-        .limit(limit ?? DEFAULT_LIMIT)
-        .offset(offset ?? 0);
+        .limit(+limit || DEFAULT_LIMIT)
+        .offset(+offset || 0);
 
       const taxMetaSql = this.taxRepo
         .createQueryBuilder('tax')
@@ -105,10 +105,8 @@ export class TaxService {
       if (search?.length)
         taxSql.andWhere(
           `(
-            tax.name LIKE :search OR
             productService.name LIKE :search OR
             productService.shortName LIKE :search OR
-            productService.category LIKE :search OR
             country.name LIKE :search OR
             country.countryCode LIKE :search OR
             region.name LIKE :search OR
@@ -127,8 +125,8 @@ export class TaxService {
         ...tax,
         pagination: {
           count: +taxMeta.count,
-          limit: limit ?? DEFAULT_LIMIT,
-          offset: offset ?? 0,
+          limit: +limit || DEFAULT_LIMIT,
+          offset: +offset || 0,
         },
       };
     } catch (error) {
